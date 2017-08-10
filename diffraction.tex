@@ -68,6 +68,14 @@ If the stellar variability is one of our key problems, the stellar spectrum neve
 
 I calculated an ensemble of PSFs with wavelength across 600-700~nm across a 10 arcsec field of view with a 50 nm plate scale - being extremely generous - and used PCA to find out the underlying dimensionality of this space. This is the approach taken in multimode fibre spectroscopy and we would expect a space of dimension $N$ to get $N$ channels across our bandpass. The fraction of variance explained by each principal component is a proxy for whether it senses anything, and as we see in Figure~\ref{zeroth}, this decreases steadily to a floor at 20-30. Visual inspection of the components shows the first couple of dozen look physical and the remainder are noisy. I therefore say we can probably get at most $(100~\text{nm})/20 = 5~\text{nm}$ resolution by this method, which would seem insufficient to grab any spectral lines. 
 
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{psf_650nm_50nmbpass.png}
+\caption{Broadband PSF centred at 650~nm with a 50~nm bandpass. Note that the outer regions of the PSF experience significant streaking with wavelength.}
+\label{broadband}
+\end{figure}
+
+
 
 \begin{figure}
 \centering
