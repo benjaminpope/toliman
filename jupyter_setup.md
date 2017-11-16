@@ -57,7 +57,7 @@ Based on [Astroconda docs](http://astroconda.readthedocs.io/en/latest/getting_st
 ```bash
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
 bash ~/miniconda.sh -b -p ~/miniconda
-echo "PATH=\$PATH:\$HOME/miniconda/bin" > .bash_profile # for later
+echo "export PATH=\$PATH:\$HOME/miniconda/bin" > .bash_profile # for later
 export PATH=$PATH:$HOME/miniconda/bin # for now
 conda config --add channels http://ssb.stsci.edu/astroconda
 conda create -n astroconda stsci
@@ -68,7 +68,7 @@ conda create -n astroconda stsci
 Although the `pysynphot` package is installed with the rest of Astroconda, the data files are not included, so following the [pysynphot install docs](http://pysynphot.readthedocs.io/en/latest/#installation-and-setup) you need do download all the tarballs from  [ftp://archive.stsci.edu/pub/hst/pysynphot/] and unpack them all in one place where `pysynphot` can find them. In my case I put the common `cdbs` folder in my `toliman` shared folder. Then set the location in the env:
 
 ```bash
-echo "PYSYN_CDBS=toliman/cdbs/" >> .bash_profile # for later
+echo "export PYSYN_CDBS=~/toliman/cdbs/" >> .bash_profile # for later
 export PYSYN_CDBS=~/toliman/cdbs/ # for now
 ```
 
