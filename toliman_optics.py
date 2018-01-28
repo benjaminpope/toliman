@@ -132,3 +132,33 @@ def phase_rosette(edge, symm, radius, ecc, semimajor, phase):
                                       pad_factor=6))
 #    return CompositeAnalyticOptic(aps)
     return poppy.CompoundAnalyticOptic(aps)
+
+# poppy.fresnel.ConicLens is broken (as of 0.6.1) so this is a local version
+# that hopefully fixes it.
+class ConicLens(poppy.CircularAperture):
+    @u.quantity_input(f_lens=u.m, radius=u.m)
+    def __init__(self,
+                 f_lens=1.0 * u.m,
+                 K=1.0,
+                 radius=1.0 * u.m,
+                 planetype=PlaneType.unspecified,
+                 name="Conic lens",
+                **kwargs):
+        """Conic Lens/Mirror
+        Parabolic, elliptical, hyperbolic, or spherical powered optic.
+        Parameters
+        ----------------
+        f_lens : astropy.quantities.Quantity of dimension length
+            Focal length of the optic
+        K : float
+            Conic constant
+        radius: astropy.quantities.Quantity of dimension length
+            Radius of the clear aperture of the optic as seen on axis.
+        name : string
+            Descriptive name
+        planetype : poppy.PlaneType, optional
+            Optional optical plane type specifier
+        """
+        CircularAperture.__init__(self, name=name, radius=radius.to(u.m).value, planetype=planetype, **kwargs)
+        self.f_lens = f_lens
+        self.K = K

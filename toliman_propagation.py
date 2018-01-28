@@ -22,8 +22,9 @@ import astropy.units as u
 import logging
 
 # Positions for un-folded telescope, relative to input pupil
-m2_pos = 0.5 * u.m
-m1_pos = 0.75 * u.m
+pupil_m2_dist = 0.5 * u.m
+m1_m2_dist = 549.337630333726 * u.mm
+m2_focus_dist = 589.999999989853 * u.mm
 
 # Dimensions
 m1_rad = 0.3 * u.m
@@ -71,12 +72,12 @@ toliman.add_optic(poppy.SecondaryObscuration(
     n_supports=m2_supports,
     support_width=m2_strut_width,
     support_angle_offset=0 * u.deg),
-    m2_pos)
+    pupil_m2_dist)
 
 # Primary mirror
 # Rosette components
-toliman.add_optic(m1, m1_pos - m2_pos)
-# Central aperture
+toliman.add_optic(m1, m1_m2_dist)
+# Central aperture - treat as a secondary obscuration with no spider
 toliman.add_optic(poppy.SecondaryObscuration(
     name='Secondary mirror support',
     secondary_radius=m1_aperture_rad,
@@ -88,8 +89,14 @@ toliman.add_optic(poppy.fresnel.ConicLens(f_lens=m1_fl, K=m1_conic, radius=m1_ra
 
 # Secondary mirror
 toliman.add_optic(poppy.fresnel.ConicLens(f_lens=m2_fl, K=m2_conic, radius=m2_rad, name="Secondary mirror"),
-                  m1_pos - m2_pos)
+                  m1_m2_dist)
 
+# Aperture in primary
+toliman.add_optic(poppy.CircularAperture(radius=m1_aperture_rad), m1_m2_dist)
+
+toliman.add_optic(poppy.ScalarTransmission(planetype=poppy.fresnel.PlaneType.image, name='focus'), distance=m2_focus_dist)
+
+poppy.describe()
 # values = rosette.sample(npix=2048)    # evaluate on 512 x 512 grid
 
 # fig=plt.figure(figsize=(10,5))
