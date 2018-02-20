@@ -18,8 +18,8 @@ def prop_conic(wf, lens_fl, conic, surface_name = ""):
         
     conic : float
         Conic constant, <-1 for hyperbolas, -1 for parabolas, between -1 and 0 
-		for ellipses, 0 for spheres, and greater than 0 for oblate ellipsoids
-		
+        for ellipses, 0 for spheres, and greater than 0 for oblate ellipsoids
+    
     surface_name : str
         String containing name of surface; used when printing out that a lens 
         is being applied
@@ -102,9 +102,9 @@ def prop_conic(wf, lens_fl, conic, surface_name = ""):
         print("  LENS: R beam old = %s  R_beam = %s  lens_fl = %6.3f" %(sR_beam_old, sR_beam, lens_fl))
         print("  LENS: Beam diameter at lens = %4.3f" %(w_at_surface * 2))
     
-	# (BJ) Note this operation could be cached in WaveFront, and in any case this op
-	# wastefully calculates sqrt for each point, but each one gets squared prior to 
-	# passing to prop_add_phase below.
+    # (BJ) Note this operation could be cached in WaveFront, and in any case this op
+    # wastefully calculates sqrt for each point, but each one gets squared prior to 
+    # passing to prop_add_phase below.
     rho = proper.prop_radius(wf)
     
     # For different propagator types
@@ -127,17 +127,17 @@ def prop_conic(wf, lens_fl, conic, surface_name = ""):
                 print("  LENS: 1/R_beam = ", 1./R_beam)
                 print("  LENS: lens_phase = ", lens_phase)
 
-	# (BJ) Conic phase calculation
-	# replaces the line:
-	# proper.prop_add_phase(wf, -rho**2 * (lens_phase/2.))
-	### BEGIN ###
-	def conic_phase(r,k,phi):
-		rsq = r**2
-		return -rsq*phi/(1. + math.sqrt(1. - (1. + k)*rsq*(phi**2)))
-	conic_phase = np.vectorize(conic_phase)
-	
-    proper.prop_add_phase(wf, conic_phase(phase_grid, conic, lens_phase)
-	#### END ####
+    # (BJ) Conic phase calculation
+    # replaces the line:
+    # proper.prop_add_phase(wf, -rho**2 * (lens_phase/2.))
+    ### BEGIN ###
+    def conic_phase(r,k,phi):
+        rsq = r**2
+        return -rsq*phi/(1. + math.sqrt(1. - (1. + k)*rsq*(phi**2)))
+    conic_phase = np.vectorize(conic_phase)
+    
+    proper.prop_add_phase(wf, conic_phase(rho, conic, lens_phase))
+    #### END ####
             
     if beam_type_new == "INSIDE_":
         wf.reference_surface = "PLANAR"
