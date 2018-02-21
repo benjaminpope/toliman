@@ -1,6 +1,7 @@
 import proper
 import math
 from prop_conic import prop_conic
+from prop_tilt import prop_tilt
 
 def prescription_rc_conic(wavelength, gridsize, 
                           PASSVALUE = {'diam': 0.3, 'm1_fl': 0.5717255, 'm1_m2_sep': 0.549337630333726, 
@@ -9,7 +10,9 @@ def prescription_rc_conic(wavelength, gridsize,
                                        'm2_strut_width': 0.01,
                                        'm2_supports': 5,
                                        'm1_conic': -1.0,
-                                       'm2_conic': -1.0
+                                       'm2_conic': -1.0,
+                                       'tilt_x': 0.0,
+                                       'tilt_y': 0.0
                                       }):
     diam           = PASSVALUE['diam']           # telescope diameter in meters
     m1_fl          = PASSVALUE['m1_fl']          # primary focal length (m)
@@ -23,8 +26,15 @@ def prescription_rc_conic(wavelength, gridsize,
     m1_conic       = PASSVALUE['m1_conic']       # Conic constant for M1
     m2_conic       = PASSVALUE['m2_conic']       # Conic constant for M2
     
+    tilt_x         = PASSVALUE['tilt_x']         # Tilt angle along x (arc seconds)
+    tilt_y         = PASSVALUE['tilt_y']         # Tilt angle along y (arc seconds)
+
     # Define the wavefront
     wfo = proper.prop_begin(diam, wavelength, gridsize, beam_ratio)
+
+    # Point off-axis
+    prop_tilt(wfo, tilt_x, tilt_y)
+    
     
     # Input aperture
     proper.prop_circular_aperture(wfo, diam/2)

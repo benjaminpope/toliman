@@ -162,3 +162,5 @@ class ConicLens(poppy.CircularAperture):
         CircularAperture.__init__(self, name=name, radius=radius.to(u.m).value, planetype=planetype, **kwargs)
         self.f_lens = f_lens
         self.K = K
+
+		

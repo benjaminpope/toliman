@@ -1,12 +1,19 @@
 import proper
 import math
+from prop_tilt import prop_tilt
 
 def prescription_rc_quad(wavelength, gridsize, 
-                          PASSVALUE = {'diam': 0.3, 'm1_fl': 0.5717255, 'm1_m2_sep': 0.549337630333726, 
-                                       'm2_fl': -0.023378959,  'bfl': 0.528110658881, 
-                                       'beam_ratio': 0.2, 'm2_rad': 0.059,
+                          PASSVALUE = {'diam': 0.3, 
+                                       'm1_fl': 0.5717255, 
+                                       'm1_m2_sep': 0.549337630333726, 
+                                       'm2_fl': -0.023378959,  
+                                       'bfl': 0.528110658881, 
+                                       'beam_ratio': 0.2, 
+                                       'm2_rad': 0.059,
                                        'm2_strut_width': 0.01,
-                                       'm2_supports': 5
+                                       'm2_supports': 5,
+                                       'tilt_x': 0.0,
+                                       'tilt_y': 0.0
                                       }):
     diam           = PASSVALUE['diam']           # telescope diameter in meters
     m1_fl          = PASSVALUE['m1_fl']          # primary focal length (m)
@@ -17,9 +24,15 @@ def prescription_rc_quad(wavelength, gridsize,
     m2_rad         = PASSVALUE['m2_rad']         # Secondary half-diameter (m)
     m2_strut_width = PASSVALUE['m2_strut_width'] # Width of struts supporting M2 (m)
     m2_supports    = PASSVALUE['m2_supports']    # Number of support structs (assumed equally spaced)
+        
+    tilt_x         = PASSVALUE['tilt_x']         # Tilt angle along x (arc seconds)
+    tilt_y         = PASSVALUE['tilt_y']         # Tilt angle along y (arc seconds)
     
     # Define the wavefront
     wfo = proper.prop_begin(diam, wavelength, gridsize, beam_ratio)
+    
+    # Point off-axis
+    prop_tilt(wfo, tilt_x, tilt_y)
     
     # Input aperture
     proper.prop_circular_aperture(wfo, diam/2)
