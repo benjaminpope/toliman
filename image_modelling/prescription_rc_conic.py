@@ -28,6 +28,8 @@ def prescription_rc_conic(wavelength, gridsize,
     
     tilt_x         = PASSVALUE['tilt_x']         # Tilt angle along x (arc seconds)
     tilt_y         = PASSVALUE['tilt_y']         # Tilt angle along y (arc seconds)
+    
+    noabs = True if "noabs" in PASSVALUE and PASSVALUE["noabs"] else False
 
     # Define the wavefront
     wfo = proper.prop_begin(diam, wavelength, gridsize, beam_ratio)
@@ -72,6 +74,6 @@ def prescription_rc_conic(wavelength, gridsize,
     proper.prop_propagate(wfo, bfl, "focus", TO_PLANE=True)
 
     # End
-    (wfo, sampling) = proper.prop_end(wfo)
+    (wfo, sampling) = proper.prop_end(wfo, NOABS = noabs)
 
     return (wfo, sampling)
