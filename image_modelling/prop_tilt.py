@@ -44,5 +44,6 @@ def prop_tilt(wf, tilt_x, tilt_y):
         # Not totally comfortable that these are combined linearly 
         # but go with Poppy for now
         phase = U * xangle_rad + V * yangle_rad  # rad. m
-        tiltphasor = np.exp(2.0j * np.pi/wf.lamda * phase )
-        wf.wfarr *= tiltphasor
+        proper.prop_add_phase(wf, phase)
+        #tiltphasor = np.exp(2.0j * np.pi/wf.lamda * phase )
+        #wf.wfarr *= tiltphasor
