@@ -36,8 +36,7 @@ def prescription_rc_conic(wavelength, gridsize,
 
     # Point off-axis
     prop_tilt(wfo, tilt_x, tilt_y)
-    
-    
+       
     # Input aperture
     proper.prop_circular_aperture(wfo, diam/2)
     # NOTE: could prop_propagate() here if some baffling included
@@ -74,6 +73,4 @@ def prescription_rc_conic(wavelength, gridsize,
     proper.prop_propagate(wfo, bfl, "focus", TO_PLANE=True)
 
     # End
-    (wfo, sampling) = proper.prop_end(wfo, NOABS = noabs)
-
-    return (wfo, sampling)
+    return proper.prop_end(wfo, NOABS = noabs)

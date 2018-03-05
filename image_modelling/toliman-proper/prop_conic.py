@@ -135,8 +135,13 @@ def prop_conic(wf, lens_fl, conic, surface_name = ""):
         rsq = r**2
         return -rsq*phi/(1. + math.sqrt(1. - (1. + k)*rsq*(phi**2)))
     conic_phase = np.vectorize(conic_phase)
+    calc_phase = conic_phase(rho, conic, 1./lens_fl)
+#    np.save("conic_phase_{}_{}.dat".format(lens_fl, conic), calc_phase)
     
-    proper.prop_add_phase(wf, conic_phase(rho, conic, lens_phase))
+    quad_phase_corr = -rho**2 * ((lens_phase - 1./lens_fl) /2.)
+#    np.save("quad_phase_{}.dat".format(lens_fl), quad_phase)
+    
+    proper.prop_add_phase(wf, calc_phase+quad_phase_corr)
     #### END ####
             
     if beam_type_new == "INSIDE_":
