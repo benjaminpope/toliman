@@ -125,3 +125,21 @@ def fix_prop_pixellate(image_in, sampling_in, sampling_out, n_out = 0):
     new = proper.prop_magnify(convolved_image, mag, n_out)
     
     return new
+
+def form_detector_image(prescription, sources, gridsize, detector_pitch, npixels):
+    source_psfs = []
+    common_sampling = detector_pitch/2. # for Nyquist 
+    npsf = npixels*2
+    for source in sources:
+        settings = source['settings']
+        wavelengths = source['wavelengths']
+        wl_weights = source['weights']
+
+        (wavefronts, samplings) = proper.prop_run_multi(prescription, wavelengths, gridsize = gridsize, QUIET=True, PRINT_INTENSITY=False, PASSVALUE=settings)
+        # prop_run_multi returns complex arrays, even when PSFs are intensity, so make real with abs
+        psfs = normalise_sampling(np.abs(wavefronts), samplings, common_sampling, npsf)
+
+        source_psfs.append(combine_psfs(psfs, wl_weights))
+
+    psf_all = combine_psfs(np.stack(source_psfs), [1. for i in range(len(source_psfs))])
+    return fix_prop_pixellate(psf_all, common_sampling, detector_pitch)
