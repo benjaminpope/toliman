@@ -9,6 +9,9 @@ def prescription_quad(wavelength, gridsize,
                                        'tilt_x': 0.0,
                                        'tilt_y': 0.0
                                       }):
+    """Prescription for a single quad lens system        
+    """
+
     diam           = PASSVALUE['diam']           # telescope diameter in meters
     m1_fl          = PASSVALUE['m1_fl']          # primary focal length (m)
     beam_ratio     = PASSVALUE['beam_ratio']     # initial beam width/grid width
