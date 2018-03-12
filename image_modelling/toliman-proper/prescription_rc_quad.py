@@ -18,13 +18,13 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     m2_supports    = PASSVALUE.get('m2_supports',5)               # Number of support structs (assumed equally spaced)
     tilt_x         = PASSVALUE.get('tilt_x',0.)                   # Tilt angle along x (arc seconds)
     tilt_y         = PASSVALUE.get('tilt_y',0.)                   # Tilt angle along y (arc seconds)
-    noabs          = PASSVALUE.get('noabs',False)                 # Tilt angle along y (arc seconds)
+    noabs          = PASSVALUE.get('noabs',False)                 # Output complex amplitude?
     
     
     # Define the wavefront
     wfo = proper.prop_begin(diam, wavelength, gridsize, beam_ratio)
 
- #   if proper.prop_is_statesaved(wfo) == False:
+#    if proper.prop_is_statesaved(wfo) == False:
     # Point off-axis
     prop_tilt(wfo, tilt_x, tilt_y)
 
@@ -62,7 +62,6 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         phase_func = PASSVALUE['phase_func']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-#            beamradius = proper.prop_get_beamradius(wfo)
         phase_map = np.zeros([ngrid, ngrid], dtype = np.float64)
         c = ngrid/2.
         for i in range(ngrid):
