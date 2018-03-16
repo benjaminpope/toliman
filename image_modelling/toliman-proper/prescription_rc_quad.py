@@ -24,6 +24,7 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     # Define the wavefront
     wfo = proper.prop_begin(diam, wavelength, gridsize, beam_ratio)
 
+# Disable state saving as by default this saves state even when not used.
 #    if proper.prop_is_statesaved(wfo) == False:
     # Point off-axis
     prop_tilt(wfo, tilt_x, tilt_y)
