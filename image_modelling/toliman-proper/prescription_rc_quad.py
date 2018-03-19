@@ -65,13 +65,14 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         sampling = proper.prop_get_sampling(wfo)
         phase_map = np.zeros([ngrid, ngrid], dtype = np.float64)
         c = ngrid/2.
+        opd = wavelength/4
         for i in range(ngrid):
             for j in range(ngrid):
                 x = i - c
                 y = j - c
                 phi = math.atan2(y, x)
                 r = sampling*math.hypot(x,y)
-                phase_map[i][j] = phase_func(r, phi)
+                phase_map[i][j] = phase_func(r, phi, opd)
         proper.prop_add_phase(wfo, phase_map)
 
     # Secondary mirror
