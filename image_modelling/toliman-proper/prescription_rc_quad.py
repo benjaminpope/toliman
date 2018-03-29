@@ -3,6 +3,8 @@ import math
 import numpy as np
 from prop_conic import prop_conic
 from prop_tilt import prop_tilt
+from gen_phasemap import gen_phasemap
+
 
 def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     # Assign parameters from PASSVALUE struct or use defaults
@@ -19,7 +21,7 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     tilt_x         = PASSVALUE.get('tilt_x',0.)                   # Tilt angle along x (arc seconds)
     tilt_y         = PASSVALUE.get('tilt_y',0.)                   # Tilt angle along y (arc seconds)
     noabs          = PASSVALUE.get('noabs',False)                 # Output complex amplitude?
-    
+    # Can also specify a phase_func function with signature phase_func(r, phi)
     
     # Define the wavefront
     wfo = proper.prop_begin(diam, wavelength, gridsize, beam_ratio)
@@ -61,18 +63,10 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
 
     if 'phase_func' in PASSVALUE:
         phase_func = PASSVALUE['phase_func']
+#        print('Generating phase pupil from function {} for wavelength {}'.format(phase_func.__name__, wavelength))
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-        phase_map = np.zeros([ngrid, ngrid], dtype = np.float64)
-        c = ngrid/2.
-        opd = wavelength/4
-        for i in range(ngrid):
-            for j in range(ngrid):
-                x = i - c
-                y = j - c
-                phi = math.atan2(y, x)
-                r = sampling*math.hypot(x,y)
-                phase_map[i][j] = phase_func(r, phi, opd)
+        phase_map = gen_phasemap(phase_func, ngrid, sampling)
         proper.prop_add_phase(wfo, phase_map)
 
     # Secondary mirror
