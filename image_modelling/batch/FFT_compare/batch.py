@@ -78,7 +78,7 @@ source_b = source_a.copy()
 source_b['settings'] = tilted
 
 def timed_op():
-    return form_detector_image(prescription, [source_a, source_b], gridsize, detector_pitch, npixels)
+    return form_detector_image(prescription, [source_a, source_b], gridsize, detector_pitch, npixels) #, multi=False)
 
 def doit():
 #    return timeit.timeit('timed_op()', 'gc.enable()', number=nits, globals=globals())
@@ -98,7 +98,7 @@ results['intel'] = doit()
 
 import json
 import datetime
-with open('fft_comparison_results_4.txt', 'a') as file:
+with open('fft_comparison_results.txt', 'a') as file:
     file.write((datetime.datetime.now().strftime("%d.%b %Y %H:%M:%S ")))
     file.write(json.dumps({'nits': nits, 'gridsize':gridsize, 'beam_ratio':beam_ratio}))
     file.write(json.dumps(results))

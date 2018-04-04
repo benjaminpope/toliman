@@ -77,6 +77,13 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         proper.prop_lens(wfo, m2_fl, "secondary")
     proper.prop_circular_aperture(wfo, m2_rad)    
 
+    if 'phase_func_sec' in PASSVALUE:
+        phase_func = PASSVALUE['phase_func_sec']
+        ngrid = proper.prop_get_gridsize(wfo)
+        sampling = proper.prop_get_sampling(wfo)
+        phase_map = gen_phasemap(phase_func, ngrid, sampling)
+        proper.prop_add_phase(wfo, phase_map)
+        
 #    proper.prop_state(wfo)
 
     # Hole through primary
