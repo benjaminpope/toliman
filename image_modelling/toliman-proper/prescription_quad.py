@@ -2,6 +2,7 @@ import proper
 import math
 import numpy as np
 from prop_tilt import prop_tilt
+from gen_phasemap import gen_phasemap
 
 def prescription_quad(wavelength, gridsize, PASSVALUE = {}):
     # Assign parameters from PASSVALUE struct or use defaults
@@ -27,23 +28,13 @@ def prescription_quad(wavelength, gridsize, PASSVALUE = {}):
     proper.prop_define_entrance(wfo)
 
     # Primary mirror (treat as quadratic lens)
-    proper.prop_lens(wfo, m1_fl, "primary")
     if 'phase_func' in PASSVALUE:
         phase_func = PASSVALUE['phase_func']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-        phase_map = np.zeros([ngrid, ngrid], dtype = np.float64)
-        c = ngrid/2.
-        opd = wavelength/4.
-        for i in range(ngrid):
-            for j in range(ngrid):
-                x = i - c
-                y = j - c
-                phi = math.atan2(y, x)
-                r = sampling*math.hypot(x,y)
-                phase_map[i][j] = phase_func(r, phi, opd)
-        
+        phase_map = gen_phasemap(phase_func, ngrid, sampling)
         proper.prop_add_phase(wfo, phase_map)
+    proper.prop_lens(wfo, m1_fl, "primary")
 
     # Focus
     proper.prop_propagate(wfo, m1_fl, "focus", TO_PLANE=True)

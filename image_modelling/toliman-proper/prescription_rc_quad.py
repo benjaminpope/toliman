@@ -54,6 +54,12 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     proper.prop_define_entrance(wfo)
 
     # Primary mirror
+    if 'phase_func' in PASSVALUE:
+        phase_func = PASSVALUE['phase_func']
+        ngrid = proper.prop_get_gridsize(wfo)
+        sampling = proper.prop_get_sampling(wfo)
+        phase_map = gen_phasemap(phase_func, ngrid, sampling)
+        proper.prop_add_phase(wfo, phase_map)
     proper.prop_propagate(wfo, m1_m2_sep, "primary")
     if 'm1_conic' in PASSVALUE:
         prop_conic(wfo, m1_fl, PASSVALUE['m1_conic'], "conic primary")
@@ -61,9 +67,9 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         proper.prop_lens(wfo, m1_fl, "primary")
     proper.prop_circular_obscuration(wfo, m1_hole_rad)
 
-    if 'phase_func' in PASSVALUE:
-        phase_func = PASSVALUE['phase_func']
-#        print('Generating phase pupil from function {} for wavelength {}'.format(phase_func.__name__, wavelength))
+
+    if 'phase_func_sec' in PASSVALUE:
+        phase_func = PASSVALUE['phase_func_sec']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
         phase_map = gen_phasemap(phase_func, ngrid, sampling)
@@ -77,12 +83,6 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         proper.prop_lens(wfo, m2_fl, "secondary")
     proper.prop_circular_aperture(wfo, m2_rad)    
 
-    if 'phase_func_sec' in PASSVALUE:
-        phase_func = PASSVALUE['phase_func_sec']
-        ngrid = proper.prop_get_gridsize(wfo)
-        sampling = proper.prop_get_sampling(wfo)
-        phase_map = gen_phasemap(phase_func, ngrid, sampling)
-        proper.prop_add_phase(wfo, phase_map)
         
 #    proper.prop_state(wfo)
 

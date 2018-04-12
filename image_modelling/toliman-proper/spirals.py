@@ -19,7 +19,7 @@ def binarized_ringed(r, phi, phase, thresh=0., white=0, empty=0.):
     # Physical dimensions
     r_max = 300.
     r_min = 50.
-    r_split = 246. # interface between main sprial and outer rim    
+    r_split = 246. # interface between main spiral and outer rim    
     
     black = phase
     v = empty
