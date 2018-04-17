@@ -36,7 +36,7 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     # NOTE: could prop_propagate() here if some baffling included
 
     # Secondary and structs obscuration
-    proper.prop_circular_obscuration(wfo, m2_rad)                      # secondary mirror obscuration
+    proper.prop_circular_obscuration(wfo, m2_rad) # secondary mirror obscuration
     # Spider struts/vanes, arranged evenly radiating out from secondary
     strut_length = diam/2 - m2_rad
     strut_step = 360/m2_supports
@@ -83,7 +83,6 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         proper.prop_lens(wfo, m2_fl, "secondary")
     proper.prop_circular_aperture(wfo, m2_rad)    
 
-        
 #    proper.prop_state(wfo)
 
     # Hole through primary
