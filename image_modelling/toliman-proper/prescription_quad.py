@@ -39,12 +39,6 @@ def prescription_quad(wavelength, gridsize, PASSVALUE = {}):
     if m1_hole_rad is not None:
         proper.prop_circular_obscuration(wfo, m1_hole_rad)
     wf = proper.prop_get_wavefront(wfo)
-    #plt.imshow(np.angle(wf))
-    #plt.show()
-    #plt.imshow(np.abs(wf))
-    #plt.show()
-    #plt.imshow(np.log10(np.abs(np.fft.fftshift(np.fft.fft2(wf)))))
-    #plt.show()
     proper.prop_lens(wfo, m1_fl, "primary")
     
     # Focus
