@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from gen_opdmap import gen_opdmap
 
 def gen_phasemap(phase_func, ngrid, sampling, use_cached=True, save_cached=True):
     """Generate the phase map for a phase pupil
@@ -21,31 +22,5 @@ def gen_phasemap(phase_func, ngrid, sampling, use_cached=True, save_cached=True)
     phase_map: nparray
         Phase map of optical path difference for each position of wavefront
     """
-
-    cached_name = '{}_{}_{}.npy'.format(phase_func.__name__, ngrid, sampling)
-    cached_exists = False
-    if use_cached is True:
-        try:
-#            print("Using cached file {}".format(cached_name))
-            phase_map = np.load(cached_name)
-            cached_exists = True
-        except IOError:
-            print("Couldn't load file {}".format(cached_name))
-            cached_exists = False
-    
-    if cached_exists is False:
-        phase_map = np.zeros([ngrid, ngrid], dtype = np.float64)
-        c = ngrid/2.
-        for i in range(ngrid):
-            for j in range(ngrid):
-                x = i - c
-                y = j - c
-                phi = math.atan2(y, x)
-                r = sampling*math.hypot(x,y)
-                phase_map[i][j] = phase_func(r, phi)
-            
-    if cached_exists is False and save_cached is True:
-#        print("Caching file {}".format(cached_name))
-        np.save(cached_name, phase_map)
-        
-    return phase_map
+    print("WARNING: gen_phasemap DEPRECATED, use gen_opdmap instead")
+    return gen_opdmap(phase_func, ngrid, sampling, use_cached=use_cached, save_cached=save_cached)
