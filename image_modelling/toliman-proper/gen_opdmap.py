@@ -27,7 +27,7 @@ def gen_opdmap(opd_func, ngrid, sampling, use_cached=True, save_cached=True):
     if use_cached is True:
         try:
 #            print("Using cached file {}".format(cached_name))
-            opd_func = np.load(cached_name)
+            opd_map = np.load(cached_name)
             cached_exists = True
         except IOError:
             print("Couldn't load file {}".format(cached_name))
