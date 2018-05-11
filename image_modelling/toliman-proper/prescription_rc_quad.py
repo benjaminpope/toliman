@@ -3,7 +3,7 @@ import math
 import numpy as np
 from prop_conic import prop_conic
 from prop_tilt import prop_tilt
-from gen_phasemap import gen_phasemap
+from gen_opdmap import gen_opdmap
 
 
 def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
@@ -21,6 +21,7 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     tilt_x         = PASSVALUE.get('tilt_x',0.)                   # Tilt angle along x (arc seconds)
     tilt_y         = PASSVALUE.get('tilt_y',0.)                   # Tilt angle along y (arc seconds)
     noabs          = PASSVALUE.get('noabs',False)                 # Output complex amplitude?
+    use_caching    = PASSVALUE.get('use_caching',False)           # Use cached files if available?
     # Can also specify a phase_func function with signature phase_func(r, phi)
     
     # Define the wavefront
@@ -58,7 +59,7 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         phase_func = PASSVALUE['phase_func']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-        phase_map = gen_phasemap(phase_func, ngrid, sampling)
+        phase_map = gen_opdmap(phase_func, ngrid, sampling, use_cached=use_caching, save_cached=use_caching)
         proper.prop_add_phase(wfo, phase_map)
     proper.prop_propagate(wfo, m1_m2_sep, "primary")
     if 'm1_conic' in PASSVALUE:
@@ -72,7 +73,7 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         phase_func = PASSVALUE['phase_func_sec']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-        phase_map = gen_phasemap(phase_func, ngrid, sampling)
+        phase_map = gen_opdmap(phase_func, ngrid, sampling, use_cached=use_caching, save_cached=use_caching)
         proper.prop_add_phase(wfo, phase_map)
 
     # Secondary mirror
