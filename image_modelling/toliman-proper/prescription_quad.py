@@ -3,7 +3,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from prop_tilt import prop_tilt
-from gen_phasemap import gen_phasemap
+from gen_opdmap import gen_opdmap
 
 def prescription_quad(wavelength, gridsize, PASSVALUE = {}):
     # Assign parameters from PASSVALUE struct or use defaults
@@ -34,7 +34,7 @@ def prescription_quad(wavelength, gridsize, PASSVALUE = {}):
         phase_func = PASSVALUE['phase_func']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-        phase_map = gen_phasemap(phase_func, ngrid, sampling)
+        phase_map = gen_opdmap(phase_func, ngrid, sampling)
         proper.prop_add_phase(wfo, phase_map)
     if m1_hole_rad is not None:
         proper.prop_circular_obscuration(wfo, m1_hole_rad)
