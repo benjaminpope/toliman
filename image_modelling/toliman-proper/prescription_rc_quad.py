@@ -4,7 +4,10 @@ import numpy as np
 from prop_conic import prop_conic
 from prop_tilt import prop_tilt
 from gen_opdmap import gen_opdmap
-
+from build_prop_circular_aperture import build_prop_circular_aperture
+from build_prop_circular_obscuration import build_prop_circular_obscuration
+from build_prop_rectangular_obscuration import build_prop_rectangular_obscuration
+from build_phase_map import build_phase_map
 
 def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     # Assign parameters from PASSVALUE struct or use defaults
@@ -33,11 +36,11 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     prop_tilt(wfo, tilt_x, tilt_y)
 
     # Input aperture
-    proper.prop_circular_aperture(wfo, diam/2)
+    wfo.wfarr *= build_prop_circular_aperture(wfo, diam/2)
     # NOTE: could prop_propagate() here if some baffling included
 
     # Secondary and structs obscuration
-    proper.prop_circular_obscuration(wfo, m2_rad) # secondary mirror obscuration
+    wfo.wfarr *= build_prop_circular_obscuration(wfo, m2_rad) # secondary mirror obscuration
     # Spider struts/vanes, arranged evenly radiating out from secondary
     strut_length = diam/2 - m2_rad
     strut_step = 360/m2_supports
@@ -47,49 +50,47 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
         radians = math.radians(angle) 
         xoff = math.cos(radians)*strut_centre
         yoff = math.sin(radians)*strut_centre
-        proper.prop_rectangular_obscuration(wfo, m2_strut_width, strut_length,
+        wfo.wfarr *= build_prop_rectangular_obscuration(wfo, m2_strut_width, 									strut_length,
                                             xoff, yoff,
                                             ROTATION = angle + 90)
 
     # Normalize wavefront
     proper.prop_define_entrance(wfo)
 
+    proper.prop_propagate(wfo, m1_m2_sep, "primary")
     # Primary mirror
     if 'phase_func' in PASSVALUE:
         phase_func = PASSVALUE['phase_func']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-        phase_map = gen_opdmap(phase_func, ngrid, sampling, use_cached=use_caching, save_cached=use_caching)
-        proper.prop_add_phase(wfo, phase_map)
-    proper.prop_propagate(wfo, m1_m2_sep, "primary")
+        opd_map = gen_opdmap(phase_func, ngrid, sampling, use_cached=use_caching, save_cached=use_caching)
+        wfo.wfarr *= build_phase_map(wfo, opd_map)
     if 'm1_conic' in PASSVALUE:
         prop_conic(wfo, m1_fl, PASSVALUE['m1_conic'], "conic primary")
     else:
         proper.prop_lens(wfo, m1_fl, "primary")
-    proper.prop_circular_obscuration(wfo, m1_hole_rad)
+    wfo.wfarr *= build_prop_circular_obscuration(wfo, m1_hole_rad)
 
-
+    # Secondary mirror
+    proper.prop_propagate(wfo, m1_m2_sep, "secondary")
     if 'phase_func_sec' in PASSVALUE:
         phase_func = PASSVALUE['phase_func_sec']
         ngrid = proper.prop_get_gridsize(wfo)
         sampling = proper.prop_get_sampling(wfo)
-        phase_map = gen_opdmap(phase_func, ngrid, sampling, use_cached=use_caching, save_cached=use_caching)
-        proper.prop_add_phase(wfo, phase_map)
-
-    # Secondary mirror
-    proper.prop_propagate(wfo, m1_m2_sep, "secondary")
+        opd_map = gen_opdmap(phase_func, ngrid, sampling, use_cached=use_caching, save_cached=use_caching)
+        wfo.wfarr *= build_phase_map(wfo, opd_map)
     if 'm1_conic' in PASSVALUE:
         prop_conic(wfo, m2_fl, PASSVALUE['m2_conic'], "conic secondary")
     else:
         proper.prop_lens(wfo, m2_fl, "secondary")
-    proper.prop_circular_aperture(wfo, m2_rad)    
+    wfo.wfarr *= build_prop_circular_aperture(wfo, m2_rad)    
 
 #    proper.prop_state(wfo)
 
     # Hole through primary
     if m1_m2_sep<bfl:
         proper.prop_propagate(wfo, m1_m2_sep, "M1 hole")
-        proper.prop_circular_aperture(wfo, m1_hole_rad)    
+        wfo.wfarr *= build_prop_circular_aperture(wfo, m1_hole_rad)    
 
 
     # Focus - bfl can be varied between runs
