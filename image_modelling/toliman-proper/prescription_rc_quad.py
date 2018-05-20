@@ -8,7 +8,7 @@ from build_prop_circular_aperture import build_prop_circular_aperture
 from build_prop_circular_obscuration import build_prop_circular_obscuration
 from build_prop_rectangular_obscuration import build_prop_rectangular_obscuration
 from build_phase_map import build_phase_map
-from proper_cache import load_cached_grid, save_cached_grid, gen_cached_name 
+from proper_cache import load_cacheable_grid
 
 def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     # Assign parameters from PASSVALUE struct or use defaults
@@ -26,7 +26,16 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     tilt_y         = PASSVALUE.get('tilt_y',0.)                   # Tilt angle along y (arc seconds)
     noabs          = PASSVALUE.get('noabs',False)                 # Output complex amplitude?
     use_caching    = PASSVALUE.get('use_caching',False)           # Use cached files if available?
-    # Can also specify a phase_func function with signature phase_func(r, phi)
+    # Can also specify a opd_func function with signature opd_func(r, phi)
+    if 'phase_func' in PASSVALUE:
+        print('DEPRECATED setting "phase_func": use "opd_func" instead')
+        if 'opd_func' not in PASSVALUE:
+            PASSVALUE['opd_func'] = PASSVALUE['phase_func']
+    if 'phase_func_sec' in PASSVALUE:
+        print('DEPRECATED setting "phase_func_sec": use "opd_func_sec" instead')
+        if 'opd_func_sec' not in PASSVALUE:
+            PASSVALUE['opd_func_sec'] = PASSVALUE['phase_func_sec']
+    
     
     # Define the wavefront
     wfo = proper.prop_begin(diam, wavelength, gridsize, beam_ratio)
@@ -36,17 +45,13 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
     # Point off-axis
     prop_tilt(wfo, tilt_x, tilt_y)
 
-    aperture_cachename = gen_cached_name('m2_obs', wfo)
-    aperture = None
-    if use_caching:
-        aperture = load_cached_grid(aperture_cachename)
-    if aperture is None:
+    def build_m2_obs():
         # Input aperture
-        aperture = build_prop_circular_aperture(wfo, diam/2)
+        grid = build_prop_circular_aperture(wfo, diam/2)
         # NOTE: could prop_propagate() here if some baffling included ( but would need to change caching)
 
         # Secondary and structs obscuration
-        aperture *= build_prop_circular_obscuration(wfo, m2_rad) # secondary mirror obscuration
+        grid *= build_prop_circular_obscuration(wfo, m2_rad) # secondary mirror obscuration
         # Spider struts/vanes, arranged evenly radiating out from secondary
         strut_length = diam/2 - m2_rad
         strut_step = 360/m2_supports
@@ -56,30 +61,24 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
             radians = math.radians(angle) 
             xoff = math.cos(radians)*strut_centre
             yoff = math.sin(radians)*strut_centre
-            aperture *= build_prop_rectangular_obscuration(wfo, m2_strut_width,                                     strut_length,
+            grid *= build_prop_rectangular_obscuration(wfo, m2_strut_width,                                     strut_length,
                                                 xoff, yoff,
                                                 ROTATION = angle + 90)
-        if use_caching:
-            save_cached_grid(aperture_cachename, aperture)
-    wfo.wfarr *= aperture
+        return grid
+    
+    wfo.wfarr *= load_cacheable_grid('m2_obs', wfo, build_m2_obs, use_caching)
     
     # Normalize wavefront
     proper.prop_define_entrance(wfo)
 
     proper.prop_propagate(wfo, m1_m2_sep, "primary")
     # Primary mirror
-    if 'phase_func' in PASSVALUE:
-        phase_func = PASSVALUE['phase_func']        
-        opd_cachename = gen_cached_name(phase_func.__name__, wfo)
-        opd = None
-        if use_caching:
-            opd = load_cached_grid(opd_cachename)
-        if opd is None:
-            opd = gen_opdmap(phase_func, proper.prop_get_gridsize(wfo), proper.prop_get_sampling(wfo))
-            if use_caching:
-                save_cached_grid(opd_cachename, opd)
+    if 'opd_func' in PASSVALUE:
+        opd1_func = PASSVALUE['opd_func']        
+        def build_m1_opd():
+            return gen_opdmap(opd1_func, proper.prop_get_gridsize(wfo), proper.prop_get_sampling(wfo))
         # TODO: Could also cache the phase map
-        wfo.wfarr *= build_phase_map(wfo, opd)
+        wfo.wfarr *= build_phase_map(wfo, load_cacheable_grid(opd1_func.__name__, wfo, build_m1_opd, use_caching))
     if 'm1_conic' in PASSVALUE:
         prop_conic(wfo, m1_fl, PASSVALUE['m1_conic'], "conic primary")
     else:
@@ -88,48 +87,30 @@ def prescription_rc_quad(wavelength, gridsize, PASSVALUE = {}):
 
     # Secondary mirror
     proper.prop_propagate(wfo, m1_m2_sep, "secondary")
-    if 'phase_func_sec' in PASSVALUE:
-        phase_func = PASSVALUE['phase_func_sec']
-        opd_cachename = gen_cached_name(phase_func.__name__, wfo)
-        opd = None
-        if use_caching:
-            opd = load_cached_grid(opd_cachename)
-        if opd is None:
-            opd = gen_opdmap(phase_func, proper.prop_get_gridsize(wfo), proper.prop_get_sampling(wfo))
-            if use_caching:
-                save_cached_grid(opd_cachename, opd)
-        # TODO: Could also cache the phase map - but would need to take account of wavelength
-        wfo.wfarr *= build_phase_map(wfo, opd_map)
+    if 'opd_func_sec' in PASSVALUE:
+        opd2_func = PASSVALUE['opd_func_sec']
+        def build_m2_opd():
+            return gen_opdmap(opd2_func, proper.prop_get_gridsize(wfo), proper.prop_get_sampling(wfo))
+        # TODO: Could also cache the phase map
+        wfo.wfarr *= build_phase_map(wfo, load_cacheable_grid(opd2_func.__name__, wfo, build_m2_opd, use_caching))
         
     if 'm1_conic' in PASSVALUE:
         prop_conic(wfo, m2_fl, PASSVALUE['m2_conic'], "conic secondary")
     else:
         proper.prop_lens(wfo, m2_fl, "secondary")
                 
-    cachename = gen_cached_name('m2_ap', wfo)
-    aperture = None
-    if use_caching:
-        aperture = load_cached_grid(cachename)
-    if aperture is None:
-        aperture = build_prop_circular_aperture(wfo, m2_rad)
-        if use_caching:
-            save_cached_grid(cachename, aperture)
-    wfo.wfarr *= aperture   
+    def build_m2_ap():
+        return build_prop_circular_aperture(wfo, m2_rad)
+    wfo.wfarr *= load_cacheable_grid('m2_ap', wfo, build_m2_ap)
 
 #    proper.prop_state(wfo)
 
     # Hole through primary
     if m1_m2_sep<bfl:
         proper.prop_propagate(wfo, m1_m2_sep, "M1 hole")
-        cachename = gen_cached_name('m1_hole', wfo)
-        aperture = None
-        if use_caching:
-            aperture = load_cached_grid(cachename)
-        if aperture is None:
-            aperture = build_prop_circular_aperture(wfo, m1_hole_rad) 
-            if use_caching:
-                save_cached_grid(cachename, aperture)
-        wfo.wfarr *= aperture    
+        def build_m1_hole():
+            return build_prop_circular_aperture(wfo, m1_hole_rad) 
+        wfo.wfarr *= load_cacheable_grid('m1_hole', wfo, build_m1_hole)
 
 
     # Focus - bfl can be varied between runs
