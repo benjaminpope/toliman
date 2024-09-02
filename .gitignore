@@ -1,0 +1,4 @@
+/.idea
+__pycache__
+/image_modelling/notebooks/*.npz
+.ipynb_checkpoints
